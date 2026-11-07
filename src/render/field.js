@@ -1,4 +1,5 @@
 import { palette, phaseRGB } from './palette.js';
+import { blurGlow } from './glow.js';
 import {
   exposure,
   densityContours,
@@ -35,6 +36,7 @@ export class FieldRenderer {
     this.embedded = false;
     this.swarm = new Swarm(260);
     this.waveScratch = {};
+    this.glowScratch = {};
     this.pixels = null;
     this.glowPixels = null;
     this.lastStepRendered = -1;
@@ -83,7 +85,7 @@ export class FieldRenderer {
     };
   }
 
-  updateWaveTexture(field, pal) {
+  updateWaveTexture(field, pal, displayWidth) {
     const targetN = 128;
     const wave = interpolateWave(
       field.density,
@@ -151,6 +153,7 @@ export class FieldRenderer {
     }
 
     this.sc.putImageData(this.pixels, 0, 0);
+    this.glowScratch = blurGlow(gData, n, 14 * n / Math.max(1, displayWidth), this.glowScratch);
     this.gc.putImageData(this.glowPixels, 0, 0);
   }
 
@@ -287,12 +290,13 @@ export class FieldRenderer {
     const hasEntities = Array.isArray(frame.entities) && frame.entities.length > 0;
 
     // 2. Volumetric Wave Interference Field (clipped to circular basin)
-    if (this.lastFrame !== frame || this.lastTheme !== theme) {
+    if (this.lastFrame !== frame || this.lastTheme !== theme || this.lastTextureWidth !== bounds.w) {
       if (hasEntities) {
-        this.updateWaveTexture(frame.field, pal);
+        this.updateWaveTexture(frame.field, pal, bounds.w);
       }
       this.lastFrame = frame;
       this.lastTheme = theme;
+      this.lastTextureWidth = bounds.w;
     }
 
     if (hasEntities) {
@@ -306,10 +310,8 @@ export class FieldRenderer {
       ctx.globalAlpha = pal.name === 'daylight' ? 0.72 : 0.85;
       ctx.drawImage(this.surface, bounds.x, bounds.y, bounds.w, bounds.h);
 
-      ctx.filter = 'blur(14px)';
       ctx.globalAlpha = pal.name === 'daylight' ? 0.35 : 0.72;
       ctx.drawImage(this.glow, bounds.x, bounds.y, bounds.w, bounds.h);
-      ctx.filter = 'none';
 
       // 3. Wave Density & Phase Crest Vector Contours
       ctx.globalCompositeOperation = 'source-over';
@@ -365,5 +367,6 @@ export class FieldRenderer {
     this.pixels = null;
     this.glowPixels = null;
     this.waveScratch = {};
+    this.glowScratch = {};
   }
 }
