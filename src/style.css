@@ -22,7 +22,8 @@
 :host([embed]:not([embed="false"])) .hud-menu-toggle,
 :host([embed]:not([embed="false"])) .panel-backdrop,
 :host([embed]:not([embed="false"])) .hud-restore-pill,
-:host([embed]:not([embed="false"])) [data-role="drawer"] {
+:host([embed]:not([embed="false"])) [data-role="drawer"],
+:host([embed]:not([embed="false"])) [data-mode="inspect"] {
   display: none;
 }
 

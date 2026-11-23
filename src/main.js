@@ -178,6 +178,7 @@ export class KyonamiChamber extends HTMLElement {
       this.resizeCanvas();
     } else if (name === 'embed') {
       this.setPanelMenu(false, false);
+      if (this.embedded && this.cursorMode === 'inspect') this.setCursorMode('reverse');
       this.applyDimensions();
       if (this.renderer) {
         this.renderer.embedded = this.embedded;
@@ -214,7 +215,7 @@ export class KyonamiChamber extends HTMLElement {
     this.shell.dataset.theme = this.theme;
 
     const modeAttr = attributeValue('mode', this.getAttribute('mode'));
-    if (modeAttr) {
+    if (modeAttr && !(this.embedded && modeAttr === 'inspect')) {
       this.cursorMode = modeAttr;
     } else if (this.settings.preset === 'blank') {
       this.cursorMode = 'emit';
@@ -644,7 +645,7 @@ export class KyonamiChamber extends HTMLElement {
     });
 
     // Quick click/tap selects the nearest quantum entity for inspection
-    if (heldMs < 240 && !wasMoved) {
+    if (!this.embedded && heldMs < 240 && !wasMoved) {
       this.client.send('select', { x: wx, y: wy, maxDist: 32 });
     }
   }
@@ -670,6 +671,7 @@ export class KyonamiChamber extends HTMLElement {
 
   setCursorMode(mode) {
     if (!['reverse', 'observe', 'emit', 'inspect'].includes(mode)) return;
+    if (this.embedded && mode === 'inspect') return;
     if (this.cursorMode !== mode) {
       this.fieldAction.active = false;
       this.dragEmit.active = false;

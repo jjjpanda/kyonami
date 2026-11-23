@@ -227,6 +227,7 @@ test('panels use full-height tabs through 1100px and split above, with one contr
   await expect(chamber.locator('.hud-inspector')).toBeHidden();
   await expect(chamber.locator('.hud-dock')).toBeVisible();
   await expect(chamber.locator('[data-action="toggle-panels"]')).toBeHidden();
+  await expect(chamber.locator('[data-mode="inspect"]')).toBeHidden();
   await expect(chamber.locator('.cosmos-canvas')).toHaveCSS('width', '1920px');
   await chamber.evaluate(el => el.setAttribute('embed', 'false'));
   await expect(chamber.locator('.hud-panels')).toBeHidden();

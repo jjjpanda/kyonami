@@ -346,13 +346,14 @@ export class FieldRenderer {
     }
 
     // 4. Causal Interaction Links & Traveling Telemetry Pulses
-    drawCausalLinks(ctx, camera, frame.entities, frame.links, frame.selectedId, pal, now);
+    const selectedId = this.embedded ? null : frame.selectedId;
+    drawCausalLinks(ctx, camera, frame.entities, frame.links, selectedId, pal, now);
 
     // 5. Collapse Reticles & Reversal Shockwaves
     drawRipples(ctx, camera, frame.ripples, pal);
 
     // 6. Quanta (Wave Envelopes -> Classical Faceted Particles)
-    drawEntities(ctx, camera, frame.entities, frame.selectedId, pal, now);
+    drawEntities(ctx, camera, frame.entities, selectedId, pal, now);
 
     // 7. Interactive Cursor Field Overlay (Press-and-Hold Causal Reversal / Observer / Emitter)
     drawFieldOverlay(ctx, camera, frame.fieldAction, options.dragEmit, pal, now);
