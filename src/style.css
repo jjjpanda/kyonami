@@ -935,7 +935,8 @@ kbd {
 
   .mode-group {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     width: 100%;
     gap: 4px;
   }
