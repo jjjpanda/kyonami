@@ -169,7 +169,7 @@ export class KyonamiChamber extends HTMLElement {
       this.setTheme(valid === 'dark' ? 'citypop' : valid === 'light' ? 'daylight' : valid);
     } else if (name === 'mode' && valid !== null) {
       this.setCursorMode(valid);
-    } else if (name === 'autoplay' && valid !== null) {
+    } else if (name === 'autoplay' && valid !== null && this.embedded) {
       this.setPlaying(valid === 'true');
     } else if (name === 'speed' && valid !== null) {
       this.setSpeed(Number(valid));
@@ -179,6 +179,7 @@ export class KyonamiChamber extends HTMLElement {
     } else if (name === 'embed') {
       this.setPanelMenu(false, false);
       if (this.embedded && this.cursorMode === 'inspect') this.setCursorMode('reverse');
+      if (!this.embedded) this.setPlaying(true);
       this.applyDimensions();
       if (this.renderer) {
         this.renderer.embedded = this.embedded;
@@ -230,12 +231,12 @@ export class KyonamiChamber extends HTMLElement {
     const reducedMotion =
       typeof window !== 'undefined' &&
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    if (autoplayAttr !== null) {
-      this.playing = autoplayAttr === 'true';
-    } else if (reducedMotion) {
-      this.playing = false;
-    } else {
+    if (!this.embedded) {
       this.playing = true;
+    } else if (autoplayAttr !== null) {
+      this.playing = autoplayAttr === 'true';
+    } else {
+      this.playing = !reducedMotion;
     }
 
     this.applyDimensions();
