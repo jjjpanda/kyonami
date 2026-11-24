@@ -476,7 +476,7 @@ export function drawFieldOverlay(ctx, camera, fieldAction, dragEmit, pal, now) {
 
     drawCanvasBadge(
       ctx,
-      'SLINGSHOT WAVEPACKET',
+      'AIM',
       sx,
       sy - 34 * uiScale,
       pal.accent,
