@@ -1,13 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { openPaused } from './paused.js';
 
 test.use({ deviceScaleFactor: 3 });
 
 test('wave glow renders without canvas filters at mobile density and after resizing', async ({ page }) => {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('/?preset=causal-crystal&autoplay=false');
-  const chamber = page.locator('kyonami-chamber');
-  await expect.poll(() => chamber.evaluate(el => Boolean(el.frame))).toBe(true);
+  const chamber = await openPaused(page, '/?preset=causal-crystal');
   await chamber.evaluate(el => {
     // Catch any return to the accelerated canvas-filter path, including offscreen contexts.
     const descriptor = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, 'filter');

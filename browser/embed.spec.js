@@ -55,7 +55,7 @@ test('iframes support both full controls and the embed bottom panel', async ({ p
     }
     await expect(chamber.locator('.hud-dock')).toBeVisible();
     const bounds = await chamber.boundingBox();
-    for (const control of await chamber.locator('.hud-dock [data-mode]').all()) {
+    for (const control of await chamber.locator('.hud-dock [data-mode]').filter({ visible: true }).all()) {
       const box = await control.boundingBox();
       expect(box.x).toBeGreaterThanOrEqual(bounds.x);
       expect(box.y).toBeGreaterThanOrEqual(bounds.y);
@@ -83,7 +83,12 @@ test('web components accept attributes before connection and can toggle embed mo
   await expect(chamber.locator('.hud-sidebar')).toBeHidden();
   await expect(chamber.locator('.hud-dock')).toBeVisible();
   expect(await chamber.evaluate(el => el.frame.entities.length)).toBe(0);
+  expect(await chamber.evaluate(el => el.playing)).toBe(false);
   await chamber.evaluate(el => el.setAttribute('embed', 'false'));
+  expect(await chamber.evaluate(el => el.playing)).toBe(true);
+  await chamber.evaluate(el => el.setAttribute('autoplay', 'true'));
+  await chamber.evaluate(el => el.setAttribute('autoplay', 'false'));
+  expect(await chamber.evaluate(el => el.playing)).toBe(true);
   await expect(chamber.locator('.hud-sidebar')).toBeHidden();
   await chamber.locator('[data-action="toggle-panels"]').click();
   await expect(chamber.locator('.hud-sidebar')).toBeVisible();
@@ -102,7 +107,8 @@ test('embed bottom panel changes modes and emits the selected particle type', as
   const chamber = page.locator('kyonami-chamber');
   await expect.poll(() => chamber.evaluate(el => Boolean(el.frame))).toBe(true);
 
-  for (const mode of ['reverse', 'observe', 'inspect']) {
+  await expect(chamber.locator('[data-mode="inspect"]')).toBeHidden();
+  for (const mode of ['reverse', 'observe']) {
     const button = chamber.locator(`[data-mode="${mode}"]`);
     await button.click();
     await expect(button).toHaveAttribute('aria-pressed', 'true');

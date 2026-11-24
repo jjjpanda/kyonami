@@ -1,9 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { openPaused } from './paused.js';
 
 test('controls and canvas use IBM Plex Mono with a circular basin', async ({ page }) => {
-  await page.goto('/?autoplay=false');
-  const chamber = page.locator('kyonami-chamber');
-  await expect.poll(() => chamber.evaluate(el => Boolean(el.frame))).toBe(true);
+  const chamber = await openPaused(page, '/');
   const result = await chamber.evaluate(el => {
     const canvas = el.shadowRoot.querySelector('canvas');
     const camera = el.renderer.cameraProjection(canvas.width, canvas.height, el.settings.worldRadius);
@@ -48,9 +47,7 @@ async function chooseOption(chamber, control, label) {
 
 test('panels use full-height tabs through 1100px and split above, with one control per row', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop', 'Viewport matrix includes mobile sizes.');
-  await page.goto('/?preset=causal-crystal&autoplay=false');
-  const chamber = page.locator('kyonami-chamber');
-  await expect.poll(() => chamber.evaluate(el => Boolean(el.frame))).toBe(true);
+  const chamber = await openPaused(page, '/?preset=causal-crystal');
 
   const overlaps = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x
     && a.y < b.y + b.height && a.y + a.height > b.y;
@@ -244,8 +241,7 @@ test('panels use full-height tabs through 1100px and split above, with one contr
 });
 
 test('compact controls support speed, pause, and global reverse', async ({ page }, testInfo) => {
-  await page.goto('/?preset=causal-crystal&speed=0.5&autoplay=false');
-  const chamber = page.locator('kyonami-chamber');
+  const chamber = await openPaused(page, '/?preset=causal-crystal&speed=0.5');
   await openPanel(chamber);
   const canvas = chamber.locator('.cosmos-canvas');
   const speed = chamber.getByRole('combobox', { name: 'Simulation speed' });
@@ -338,12 +334,10 @@ test('compact controls support speed, pause, and global reverse', async ({ page 
 });
 
 test('EMIT popup chooses the particle type for clicks and slingshot launches', async ({ page }, testInfo) => {
-  await page.goto('/?preset=blank&autoplay=false');
-  const chamber = page.locator('kyonami-chamber');
+  const chamber = await openPaused(page, '/?preset=blank');
   const canvas = chamber.locator('.cosmos-canvas');
   const emit = chamber.getByRole('button', { name: 'Emit particle', exact: true });
   const menu = chamber.getByRole('listbox', { name: 'Emitted particle type' });
-  await expect.poll(() => chamber.evaluate(el => Boolean(el.frame))).toBe(true);
   await expect(chamber.getByRole('button', { name: '⌖ FOLLOW', exact: true })).toBeVisible();
   await openPanel(chamber);
   const globalReverse = chamber.getByRole('button', { name: 'Global reverse (hold Space)' });
@@ -413,9 +407,7 @@ test('EMIT popup chooses the particle type for clicks and slingshot launches', a
 });
 
 test('worker reactions update the inspector and survive snapshot import', async ({ page }) => {
-  await page.goto('/?preset=blank&autoplay=false');
-  const chamber = page.locator('kyonami-chamber');
-  await expect.poll(() => chamber.evaluate(el => Boolean(el.frame))).toBe(true);
+  const chamber = await openPaused(page, '/?preset=blank');
   await chamber.evaluate(el => {
     el.client.send('spawn', { wave: { flavor: 1, x: -2, vx: 8, sigma: 1.2 } });
     el.client.send('spawn', { wave: { flavor: 1, x: 2, vx: -8, sigma: 1.2 } });
@@ -437,9 +429,7 @@ test('worker reactions update the inspector and survive snapshot import', async 
 });
 
 test('entity inspector omits redundant state labels and clears in an empty chamber', async ({ page }, testInfo) => {
-  await page.goto('/?preset=causal-crystal&autoplay=false');
-  const chamber = page.locator('kyonami-chamber');
-  await expect.poll(() => chamber.evaluate(el => Boolean(el.frame))).toBe(true);
+  const chamber = await openPaused(page, '/?preset=causal-crystal');
   await expect(chamber.locator('.inspector-state, [data-inspector="state"], [data-inspector="state-description"]')).toHaveCount(0);
   const guide = chamber.locator('.inspector-guide');
   await openPanel(chamber, 'inspector');
@@ -458,10 +448,8 @@ test('entity inspector omits redundant state labels and clears in an empty chamb
 });
 
 test('inspect selects entities without advancing or modifying a paused simulation', async ({ page }) => {
-  await page.goto('/?preset=causal-crystal&autoplay=false&mode=inspect');
-  const chamber = page.locator('kyonami-chamber');
+  const chamber = await openPaused(page, '/?preset=causal-crystal&mode=inspect');
   const canvas = chamber.locator('.cosmos-canvas');
-  await expect.poll(() => chamber.evaluate(el => Boolean(el.frame))).toBe(true);
   await expect(chamber.locator('[data-mode="inspect"]')).toHaveAttribute('aria-pressed', 'true');
   const before = await chamber.evaluate(el => el.exportSnapshot());
   const target = await chamber.evaluate(el => {
@@ -494,7 +482,7 @@ test('inspect selects entities without advancing or modifying a paused simulatio
 });
 
 test('simulation timing honors fractional speeds and display refresh rates', async ({ page }) => {
-  await page.goto('/?autoplay=false');
+  await page.goto('/');
   const results = await page.locator('kyonami-chamber').evaluate(el => {
     const originalRAF = window.requestAnimationFrame;
     const results = [];
